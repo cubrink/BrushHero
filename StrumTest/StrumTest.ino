@@ -33,12 +33,6 @@
  */
 
 
-/*
- * Strum detection algorithm:
- * 
- * Calculate
- * 
- */
 
 
 // Libraries for Bloothtooth Module
@@ -133,24 +127,20 @@ void loop() {
   // put your main code here, to run repeatedly:
 
   BTserial.print(getControllerState());
-//  Serial.print("cooldown_active: ");
-//  Serial.print(cooldown_active);
-//  Serial.print(", cooldown_count: ");
-//  Serial.println(cooldown_count);
-  
+
   // See if strummed
   bool strummed = getStrumStatus();
-//  if (cooldown_active) {
-//    cooldown_count++;
-//    if (cooldown_count >= JERK_COOLDOWN) {
-//        cooldown_active = false;
-//        cooldown_count = 0;
-//    }
-//  }
+
+  // If cooldown active, add to cooldown_count
   if (cooldown_active) {
-    cooldown_active = (millis() - time_start) < JERK_TIME_COOLDOWN;
+    cooldown_count++;
+    // If cooldown met, mark as active again and reset
+    if (cooldown_count >= JERK_COOLDOWN) {
+        cooldown_active = false;
+        cooldown_count = 0;
+    }
   }
-//  else if (getJerk() > JERK_THRESHOLD) {
+  // When strummed, tell user
   else if (strummed) {
     end_ = millis();
     Serial.print("Since last strum ");
@@ -161,10 +151,8 @@ void loop() {
     time_start = millis();
     cooldown_active = true;
   }
-//  printStats();
   
   delay(25);
-
 }
 
 /*

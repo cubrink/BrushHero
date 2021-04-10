@@ -33,14 +33,6 @@
  */
 
 
-/*
- * Strum detection algorithm:
- * 
- * Calculate
- * 
- */
-
-
 // Libraries for Bloothtooth Module
 #include <SoftwareSerial.h>
 
@@ -56,12 +48,9 @@ char* chars[] = {"Hello", "World"};
 
 // Accelerometer Initialization and Constants
 Adafruit_MPU6050 mpu;
-const float ACCEL_THRESHOLD = 25.0;
-const float JERK_THRESHOLD = 5;
 const float J2_X_THRESH = 40; // Squared jerk, Up and Down movement
-const float J2_Y_THRESH = 20; // Squared jerk, Back and forth movement
+const float J2_Y_THRESH = 25; // Squared jerk, Back and forth movement
 const int JERK_COOLDOWN = 3;
-const long JERK_TIME_COOLDOWN = 100;
 
 // Button Initialization and Constants
 const int green = 4;
@@ -79,6 +68,9 @@ const int YELLOW_BIT = 3;
 const int BLUE_BIT = 4;
 const int ORANGE_BIT = 5;
 
+// Holds state of strumming
+bool strummed = false;
+
 
 // acceleration values for jerk calculation
 float x_curr, y_curr, z_curr;
@@ -89,9 +81,6 @@ int cooldown_count = 0;
 
 unsigned long start = millis();
 unsigned long end_ = millis();
-
-unsigned long time_start = millis();
-
 
 void setup() {
   Serial.begin(9600);
@@ -127,103 +116,39 @@ void setup() {
   pinMode(yellow, INPUT);
   pinMode(blue, INPUT);
   pinMode(orange, INPUT);
+  
+
 }
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  int state = getControllerState(strummed);
+  Serial.println(state);
+  BTserial.write(state);
 
-  BTserial.print(getControllerState());
-//  Serial.print("cooldown_active: ");
-//  Serial.print(cooldown_active);
-//  Serial.print(", cooldown_count: ");
-//  Serial.println(cooldown_count);
-  
-  // See if strummed
-  bool strummed = getStrumStatus();
-//  if (cooldown_active) {
-//    cooldown_count++;
-//    if (cooldown_count >= JERK_COOLDOWN) {
-//        cooldown_active = false;
-//        cooldown_count = 0;
-//    }
-//  }
+  // If cooldown active, add to cooldown_count
   if (cooldown_active) {
-    cooldown_active = (millis() - time_start) < JERK_TIME_COOLDOWN;
+    cooldown_count++;
+    // If cooldown met, mark as active again and reset
+    if (cooldown_count >= JERK_COOLDOWN) {
+        cooldown_active = false;
+        cooldown_count = 0;
+    }
   }
-//  else if (getJerk() > JERK_THRESHOLD) {
+  // When strummed, tell user
   else if (strummed) {
     end_ = millis();
-    Serial.print("Since last strum ");
-    Serial.print(end_ - start);
-    Serial.println("ms.");
-    Serial.println("Strum");
+//    Serial.print("Since last strum ");
+//    Serial.print(end_ - start);
+//    Serial.print("ms. State=");
+//    Serial.println(state);
+//    Serial.println("Strum");
     start = millis();
-    time_start = millis();
     cooldown_active = true;
   }
-//  printStats();
   
-  delay(25);
-
+  delay(20);
 }
 
-/*
- * Returns the jerk value at a given time
- */
-float getJerk()
-{
-  /* Get new sensor events with the readings */
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-
-  x_prev = x_curr;
-  y_prev = y_curr;
-  z_prev = z_curr;
-
-  x_curr = a.acceleration.x;
-  y_curr = a.acceleration.y;
-  z_curr = a.acceleration.z;
-
-  float j_x = (x_curr - x_prev);
-  float j_y = (y_curr - y_prev);
-  float j_z = (z_curr - z_prev);
-}
-
-/*
- * Returns the jerk value at a given time
- */
-float printStats()
-{
-  /* Get new sensor events with the readings */
-  sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
-
-  x_prev = x_curr;
-  y_prev = y_curr;
-  z_prev = z_curr;
-
-  x_curr = a.acceleration.x;
-  y_curr = a.acceleration.y;
-  z_curr = a.acceleration.z;
-
-  float j_x = (x_curr - x_prev);
-  float j_y = (y_curr - y_prev);
-  float j_z = (z_curr - z_prev);
-
-  Serial.print(x_curr);
-  Serial.print(",");
-  Serial.print(y_curr);
-  Serial.print(",");
-  Serial.print(z_curr);
-  Serial.print(",");
-  Serial.print(j_x);
-  Serial.print(",");
-  Serial.print(j_y);
-  Serial.print(",");
-  Serial.println(j_z);
-
-  return (((x_curr - x_prev) + (y_curr - y_prev) + (z_curr - z_prev)));
-}
 
 /*
  * Returns wether the user is strumming
@@ -254,11 +179,11 @@ bool getStrumStatus()
  * 
  * Does bitwise operations based on device inputs
  */
-int getControllerState()
+int getControllerState(bool& strummed)
 {
   int controller_state = 0;
-//  if(getStrumStatus())
-  if (false)
+  strummed = getStrumStatus();
+  if(strummed)
   {
     controller_state |= 1 << STRUM_BIT;
   }
