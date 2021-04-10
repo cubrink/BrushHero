@@ -14,7 +14,7 @@ char bits_saved[word_length];                 // array to save imported data in 
 int cur_bit_index = 0;                        // used to keep count of current character input number in array
  
 void setup() 
-{
+a{
     // Initialize the Serial Monitor
     Serial.begin(9600);
     Serial.println("Arduino is ready");
