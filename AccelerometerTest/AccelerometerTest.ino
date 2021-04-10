@@ -102,10 +102,12 @@ void loop() {
 
   float x = a.acceleration.x;
   float y = a.acceleration.y;
-  float z = a.acceleration.z-9.8;
-  float mag = sqrt((x*x)+(y*y)+(z*z));
-  Serial.println(mag);
+  //float z = a.acceleration.z-9.8;
+  float z = a.acceleration.z;
+  float vect_mag = sqrt((x*x)+(y*y)+(z*z))-9.8;
+  //Serial.println(z);
+  Serial.println(vect_mag);
  
   Serial.println("");
-  delay(50);
+  delay(100);
 }
