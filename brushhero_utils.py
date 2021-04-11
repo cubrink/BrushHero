@@ -1,15 +1,6 @@
 from pynput.keyboard import Key, Controller
 import numpy as np
 
-# BIT_KEY_MAP = {
-#     0: Key.up,
-#     1: 'a',
-#     2: 's',
-#     3: 'd',
-#     4: 'f',
-#     5: 'g'
-# }
-
 BIT_KEY_MAP = {
     0: '0',
     1: '1',
