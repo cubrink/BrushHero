@@ -37,6 +37,7 @@ We decided not to build our own game alongside the controller because we wouldn'
 
 ##### Accelerometers are wacky
 *Problem*
+
 It is *not* easy to say when someone has definitely started and finished a single motion of brushing, especially with a $2 accelerometer. This problem manifested in a variety of forms.
  1. The data is noisy — We don't care how steady you think your hand is, the data doesn't lie!
  2. Hardware inconsistency — We found our accelerometer isn't quite perfect. Depending on the direction we moved the brush, the overall magnitude wasn't always consistent. The data is lying!
@@ -44,13 +45,17 @@ It is *not* easy to say when someone has definitely started and finished a singl
  4. Gravity! — Accelerometers show values for gravity. Combined with a changing orientation it is difficult to tell how much of an acceleration along an axis is from motion and how much is from gravity.
  
 *Our Solution*
+
 Our first step to solving these problems came in carefully mounting our accelerometer so brushing-like motions alligned with the more sensitive axes of the accelerometer. This helped remove some noise and our signals became much more clear!
 
 However, more was needed to properly detect a brushing motion. Our first attempt was to get the magnitude of the acceleration, but the aforementioned gravitational field stopped us in our tracks. We got around this calculating the derivitive of the acceleration (called the *jerk*) which eliminated the constant force of gravity. Then, we looked at the jerk along different axes to detect different types of brushing motions. 
 
 ##### Toothbrushes are small
 *Problem*
-It's pretty self explanatory .
+It's pretty self explanatory. Lots of hardware, little space.
+
+*Solution*
+Make space when we can. Be creative when we can't.
 
 ##### We had the wrong bluetooth module!
 *Problem*
