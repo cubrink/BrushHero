@@ -86,29 +86,60 @@ if __name__ == '__main__':
 
     keyboard = Controller()
 
-    active = np.array([0,0,0,0,0,0], dtype=np.bool)
-    curr_state = np.array([0,0,0,0,0,0])
-    
+    curr_state = np.array( # Holds received state of input
+        [0,0,0,0,0,0],
+        dtype=np.bool,
+    )            
+    activated = np.array(  # 1 if recently pressed
+        [0,0,0,0,0,0],
+        dtype=np.bool,
+    )
+    deactivated = np.array( # 1 if recently deactivated
+        [0,0,0,0,0,0],
+        dtype=np.bool,
+    )
+    deactivated_count = np.array([0,0,0,0,0,0])
+    deactivated_threshold = np.array([2,4,4,4,4,4])
+    pressed = np.array([0,0,0,0,0,0], dtype=np.bool)
+
+    t = True
+
     # Main loop
     while True:
         # Get binary data from BT device
         data = sock.recv(1)
+        # print(data, len(data))
 
         prev_state = curr_state
         curr_state = get_state(ord(data))
-        printStatus(curr_state)
+        # Consider past values to prevent noisy signals
+        #
+        deactivated |= ~curr_state & activated # Add recently deactivated
+        deactivated &= ~curr_state             # Remove recently activated
 
-        for idx, val in enumerate(curr_state):
-            # if val:
-            #     keyboard.press(BIT_KEY_MAP[idx])
-            #     keyboard.release(BIT_KEY_MAP[idx])
+        deactivated_count += deactivated & (~curr_state & activated) # Increment deactivated
+        deactivated_count *= ~curr_state # Stop counting if button was pressed
 
-            if active[idx] and not val:
+        activated |= curr_state # Update activated
+
+        # Mark old inputs as deactivated
+        activated &= ~(deactivated_count >= deactivated_threshold)
+
+        # Unmark as deactivated if threshold surpassed
+        deactivated &= ~(deactivated_count >= deactivated_threshold)
+        # Clear count on buttons that aren't deactivated
+        deactivated_count *= deactivated
+
+        # Get input to send to
+        input_to_send = curr_state | (deactivated & (deactivated_count < deactivated_threshold))
+
+        printStatus(input_to_send)
+        for idx, val in enumerate(input_to_send):
+            if pressed[idx] and not val:
                 # Button has become deactivated
                 keyboard.release(BIT_KEY_MAP[idx])
-                active[idx] = False
-            if not active[idx] and val:
+                pressed[idx] = False
+            if not pressed[idx] and val:
                 keyboard.press(BIT_KEY_MAP[idx])
-                active[idx] = True
+                pressed[idx] = True
 
-        active |= curr_state
