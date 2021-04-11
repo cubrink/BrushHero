@@ -1,65 +1,24 @@
 import bluetooth
-# pip3 install pynput
 from pynput.keyboard import Key, Controller
 from brushhero_utils import get_state, BIT_KEY_MAP
 import sys
 import numpy as np
+from typing import List
 
 
 
-def printStatus(device_status):
+def printStatus(device_status: List[int]):
+    """
+    Prints an annotated version of the device status
+    """
     print(f"S: {device_status[0]}   G: {device_status[1]}   R: {device_status[2]}   " +
           f"Y: {device_status[3]}   B:{device_status[4]}   O: {device_status[5]}")
 
-def update_key_presses(old_status, new_status, defaults_dict, keyboard):
-    if len(old_status) == len(new_status):
-        for i in range(len(new_status)):
-            if old_status[i] == 0 and new_status[i] == 1:
-                # keyboard.press(defaults_dict[i])
-                print(f"pressing {defaults_dict[i]}")
-            elif new_status[i] == 0:
-                # keyboard.release(defaults_dict[i])
-                print(f"releasing {defaults_dict[i]}")
-
-
-
-
-# PORT = 1
-# hc06 = bluetooth.discover_devices()[0] # Assumes only one discoverable device
-
-# print(hc06)
-
-
-# sock = bluetooth.BluetoothSocket(bluetooth.RFCOMM)
-# print("Line 1")
-# # service = bluetooth.find_service(address=hc06) # Returns a blank list for now
-# print("Line 2")
-
-# sock.connect((hc06, PORT))
-# print("Line 3")
-
-# while True:
-#     data = sock.recv(1024)
-#     if len(data) == 0: 
-#         break
-#     # print(f"received [{data}] (Length = {len(data)})")
-#     status = extractDataFromInt(int(data))
-#     printStatus(status)
-
-
-
-# keyboard = Controller()
-# controller_status = [0, 0, 0, 0, 0, 0]
-
-# # while True:
-# temp_status = extractDataFromInt(1)
-# printStatus(temp_status)
-
-# if temp_status != controller_status:
-#     update_key_presses(controller_status, temp_status, system_defaults, keyboard)
-#     controller_status = temp_status
 
 if __name__ == '__main__':
+    # This is the MAC address of our bluetooth device
+    # Ideally we would like a better means of finding the device we want,
+    # but that wasn't our focus for this project
     BT_ADDR = '98:D3:C1:FD:B9:07'
     PORT = 1
 
@@ -108,11 +67,14 @@ if __name__ == '__main__':
     while True:
         # Get binary data from BT device
         data = sock.recv(1)
-        # print(data, len(data))
-
-        prev_state = curr_state
         curr_state = get_state(ord(data))
+
         # Consider past values to prevent noisy signals
+        # Sometimes the values for buttons would drop for a message or two
+        #
+        # This algorithm helps prevent that by keeping track of which buttons were
+        # recently released. The corresponding key is actually only released after 
+        # its signal has not been activated for a specified amount of time
         #
         deactivated |= ~curr_state & activated # Add recently deactivated
         deactivated &= ~curr_state             # Remove recently activated
@@ -140,6 +102,7 @@ if __name__ == '__main__':
                 keyboard.release(BIT_KEY_MAP[idx])
                 pressed[idx] = False
             if not pressed[idx] and val:
+                # Button has become activated
                 keyboard.press(BIT_KEY_MAP[idx])
                 pressed[idx] = True
 
