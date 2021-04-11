@@ -1,5 +1,6 @@
-# BrushHero
-The world's first dental hygiene based port of Guitar Hero 3: Legends of Rock™
+![BrushHero](https://github.com/cubrink/BrushHero/blob/main/assets/logo.png)
+
+The world's first dental hygiene based version of Guitar Hero 3: Legends of Rock™
 
 
 ## Inspiration
