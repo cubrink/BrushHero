@@ -2,6 +2,11 @@
 
 The world's first dental hygiene based version of Guitar Hero 3: Legends of Rock™
 
+#
+
+Devpost Submission: https://devpost.com/software/brushhero
+
+Project video: https://www.youtube.com/watch?v=VxuO0LjUMiA
 
 ## Inspiration
 PickHacks 2021 is all about entertainment, so we asked ourselves "How can we take an ordinary task and make it exciting?" The answer, or course, is simple. Make it into a game! 
